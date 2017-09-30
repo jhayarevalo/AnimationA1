@@ -19,6 +19,7 @@
 #include "simpleMath.h"
 #include <Eigen/Eigen>
 #include <Eigen/StdVector>
+#include <Eigen/Geometry>
 
 using namespace std;
 
@@ -39,9 +40,9 @@ struct Joint
         isPicked = false;
     }
 
-	void addTransformation(Eigen::Vector3f& axis, double angle) {
-		Eigen::Matrix4f rotationMatrix;
-		Eigen::Vector4f positionMatrix = Eigen::Vector4f(position.x, position.y, position.z, 0.0f);
+	void updateLocalTransformation(Eigen::Vector3f& axis, double angle) {
+		Eigen::Matrix4f rotationMatrix;// = Eigen::AngleAxisf(angle, axis).matrix();
+		//Eigen::Vector3f positionMatrix(position.x, position.y, position.z);
 
 		rotationMatrix(0,0) = pow(axis.x(), 2) + cos(angle) * (1 - pow(axis.x(), 2));
 		rotationMatrix(0, 1) = (axis.x())*(axis.y())*(1 - cos(angle)) - (axis.z())*sin(angle);
@@ -60,7 +61,7 @@ struct Joint
 
 		rotationMatrix(3, 3) = 1;
 
-		positionMatrix = rotationMatrix * positionMatrix;
+		/*positionMatrix = rotationMatrix * positionMatrix;
 
 		position.x = positionMatrix.x();
 		position.y = positionMatrix.y();
@@ -68,10 +69,12 @@ struct Joint
 
 		cout << "x: " << position.x << endl;
 		cout << "y: " << position.y << endl;
-		cout << "z: " << position.z << endl << endl;
+		cout << "z: " << position.z << endl << endl;*/
+
+		localTransformation = rotationMatrix;
 	}
 
-	void computeGlobalTransformation() {
+	void updateGlobalTransformation() {
 		globalTransformation = globalTransformation * localTransformation;
 	}
 

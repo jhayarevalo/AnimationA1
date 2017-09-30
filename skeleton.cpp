@@ -63,9 +63,15 @@ void Skeleton::glDrawSkeleton()
         else
             glColor3f(0.3, 0.3, 0.3);
 
-        glTranslated(joints[i].position.x, joints[i].position.y, joints[i].position.z);
+		Eigen::Vector4f finalPosition = joints[i].globalTransformation * Eigen::Vector4f(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
+
+        /*glTranslated(joints[i].position.x, joints[i].position.y, joints[i].position.z);
         glutSolidSphere(0.01, 15, 15);
-        glTranslated(-joints[i].position.x, -joints[i].position.y, -joints[i].position.z);
+        glTranslated(-joints[i].position.x, -joints[i].position.y, -joints[i].position.z);*/
+
+		glTranslated(finalPosition.x(), finalPosition.y(), finalPosition.z());
+		glutSolidSphere(0.01, 15, 15);
+		glTranslated(-finalPosition.x(), -finalPosition.y(), -finalPosition.z());
 
     }
 	glBegin(GL_LINES);
