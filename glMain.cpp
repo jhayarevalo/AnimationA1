@@ -416,8 +416,11 @@ void mouseMoveEvent(int x, int y)
      */
     else    
 	{
-		double angle;
+		Joint* chosenJoint = myDefMesh.mySkeleton.getSelectedJoint();
+		Joint* parentJoint = myDefMesh.mySkeleton.getParentJoint();
+		std::vector<Joint, Eigen::aligned_allocator<Joint>>* joints = myDefMesh.mySkeleton.getJoints();
 
+		double angle;
 
 		GLfloat modelview[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
@@ -430,25 +433,16 @@ void mouseMoveEvent(int x, int y)
 		Eigen::Vector4f n2 = mvI * Eigen::Vector4f(0, 0, -1, 1);
 		Eigen::Vector4f axis = (n1 - n2) / (n1 - n2).norm();
 		Eigen::Vector3f a(axis.x(), axis.y(), axis.z());
-		
 
-		for (int i = 0; i < myDefMesh.mySkeleton.joints.size(); i++) {
-			if (myDefMesh.mySkeleton.joints[i].isPicked) {
+		int parentIndex = chosenJoint->indexParent;
+		Eigen::Vector2f child(chosenJoint->position.x, chosenJoint->position.y);
 
-				int parentIndex = myDefMesh.mySkeleton.joints[i].indexParent;
-				Eigen::Vector2f child(myDefMesh.mySkeleton.joints[i].position.x, myDefMesh.mySkeleton.joints[i].position.y);
+		Eigen::Vector2f v(x - parentJoint->position.x, y - parentJoint->position.y);
+		Eigen::Vector2f u(child.x() - parentJoint->position.x, child.y() - parentJoint->position.y);
 
-				Eigen::Vector2f v(x - myDefMesh.mySkeleton.joints[parentIndex].position.x, y - myDefMesh.mySkeleton.joints[parentIndex].position.y);
-				Eigen::Vector2f u(child.x() - myDefMesh.mySkeleton.joints[parentIndex].position.x, child.y() - myDefMesh.mySkeleton.joints[parentIndex].position.y);
+		angle = acos(v.dot(u) / (v.norm() * u.norm()));
 
-				angle = acos(v.dot(u) / (v.norm() * u.norm()));
-
-				myDefMesh.mySkeleton.joints[i].updateLocalTransformation(a, angle);
-
-				cout << "joint " << i << " was picked.";
-			}
-			myDefMesh.mySkeleton.joints[i].updateGlobalTransformation();
-		}
+		chosenJoint->updateLocalTransformation(a, angle);
     }
 }
 void display()

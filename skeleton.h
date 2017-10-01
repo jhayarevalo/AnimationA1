@@ -72,6 +72,7 @@ struct Joint
 		cout << "z: " << position.z << endl << endl;*/
 
 		localTransformation = rotationMatrix;
+		updateGlobalTransformation();
 	}
 
 	void updateGlobalTransformation() {
@@ -82,7 +83,7 @@ struct Joint
 
 class Skeleton
 {
-public:
+private:
     std::vector<Joint, Eigen::aligned_allocator<Joint>> joints;
     /*Update screen coordinates of joints*/
     void updateScreenCoord();
@@ -115,14 +116,30 @@ public:
     
     void selectOrReleaseJoint();
 
-	std::vector<Joint, Eigen::aligned_allocator<Joint>> getJoints() {
-		return joints;
+	std::vector<Joint, Eigen::aligned_allocator<Joint>>* getJoints() {
+		return &joints;
 	}
 
-	void setJointPosition(int index) {
-
+	Joint* getSelectedJoint() {
+		for (int i = 0; i < joints.size(); i++) {
+			if (joints[i].isPicked) {
+				return &joints[i];
+				cout << "joint " << i << " was picked.";
+				break;
+			}
+		}
+		return nullptr;
 	}
 
+	Joint* getParentJoint() {
+		for (int i = 0; i < joints.size(); i++) {
+			if (joints[i].isPicked) {
+				return &joints[joints[i].indexParent];
+				break;
+			}
+		}
+		return nullptr;
+	}
 };
 
 #endif
