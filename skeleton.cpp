@@ -76,12 +76,16 @@ void Skeleton::glDrawSkeleton()
     }
 	glBegin(GL_LINES);
 	for (int i = 0; i < joints.size(); i++) {
+		Eigen::Vector4f finalPositionChild;
+		Eigen::Vector4f finalPositionParent;
 
-		Eigen::Vector4f finalPositionChild = joints[i].globalTransformation * Eigen::Vector4f(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
+		finalPositionChild = joints[i].globalTransformation * Eigen::Vector4f(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
 
 		if (joints[i].indexParent > -1) {
+			finalPositionParent = joints[joints[i].indexParent].globalTransformation * Eigen::Vector4f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z, 1.0f);
 			glVertex3f(finalPositionChild.x(), finalPositionChild.y(), finalPositionChild.z());
-			glVertex3f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z);
+			glVertex3f(finalPositionParent.x(), finalPositionParent.y(), finalPositionParent.z());
+			//glVertex3f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z);
 		}
 	}
 	glEnd();
