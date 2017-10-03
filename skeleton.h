@@ -25,8 +25,8 @@ using namespace std;
 
 struct Joint
 {
-	Eigen::Matrix4f localTransformation = Eigen::Matrix4f::Identity();
-	Eigen::Matrix4f globalTransformation = Eigen::Matrix4f::Identity();
+	Eigen::Matrix4d localTransformation = Eigen::Matrix4d::Identity();
+	Eigen::Matrix4d globalTransformation = Eigen::Matrix4d::Identity();
 
 	int indexParent;
     Vec3 position;
@@ -40,31 +40,10 @@ struct Joint
         isPicked = false;
     }
 
-	void updateLocalTransformation(Eigen::Vector3f& axis, double angle) {
-		Eigen::Matrix3f rotationMatrix = Eigen::AngleAxisf(angle, axis).matrix();
-		//Eigen::Vector3f positionMatrix(position.x, position.y, position.z);
-
-		/*rotationMatrix(0,0) = pow(axis.x(), 2) + cos(angle) * (1 - pow(axis.x(), 2));
-		rotationMatrix(0, 1) = (axis.x())*(axis.y())*(1 - cos(angle)) - (axis.z())*sin(angle);
-		rotationMatrix(0, 2) = (axis.x())*(axis.z())*(1 - cos(angle)) + (axis.y())*sin(angle);
-
-		rotationMatrix(1, 0) = (axis.x())*(axis.y())*(1 - cos(angle)) + (axis.z())*sin(angle);
-		rotationMatrix(1, 1) = pow(axis.y(), 2) + cos(angle) * (1 - pow(axis.y(), 2));
-		rotationMatrix(1, 2) = (axis.y())*(axis.z())*(1 - cos(angle)) - (axis.x())*sin(angle);
-
-		rotationMatrix(2, 0) = (axis.x())*(axis.z())*(1 - cos(angle)) - (axis.y())*sin(angle);
-		rotationMatrix(2, 1) = (axis.y())*(axis.z())*(1 - cos(angle)) - (axis.x())*sin(angle);
-		rotationMatrix(2, 2) = pow(axis.z(), 2) + cos(angle) * (1 - pow(axis.z(), 2));
-
-		rotationMatrix(0, 3) = rotationMatrix(1, 3) = rotationMatrix(2, 3) = 0;
-		rotationMatrix(3, 0) = rotationMatrix(3, 1) = rotationMatrix(3, 2) = 0;
-
-		rotationMatrix(3, 3) = 1;*/
-
+	void updateLocalTransformation(Eigen::Vector3d& axis, double angle) {
+		Eigen::Matrix3d rotationMatrix = Eigen::AngleAxisd(angle, axis).matrix();
 		localTransformation.block<3, 3>(0, 0) = rotationMatrix;
-		//localTransformation = rotationMatrix;
 	}
-
 
 };
 
@@ -132,18 +111,12 @@ public:
 		for (int i = 1; i < joints.size(); i++) {
 			Joint* parent = &joints[joints[i].indexParent];
 
-			Eigen::Matrix4f translateToParent = Eigen::Matrix4f::Identity();
-			Eigen::Vector3f parentVector(parent->position.x, parent->position.y, parent->position.z);
+			Eigen::Matrix4d translateToParent = Eigen::Matrix4d::Identity();
+			Eigen::Vector3d parentVector(parent->position.x, parent->position.y, parent->position.z);
 
 			translateToParent.block<3, 1>(0, 3) = parentVector;
 
 			joints[i].globalTransformation = parent->globalTransformation * translateToParent * joints[i].localTransformation * translateToParent.inverse();
-
-			/*translateToParent(0, 3) = parent->position.x;
-			translateToParent(1, 3) = parent->position.y;
-			translateToParent(2, 3) = parent->position.z;*/
-
-			//joints[i].globalTransformation = parent->globalTransformation  * joints[i].localTransformation;
 		}
 		
 	}

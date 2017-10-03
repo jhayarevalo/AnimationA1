@@ -414,27 +414,42 @@ void mouseMoveEvent(int x, int y)
     /*
      * Do joint jobs
      */
-    else    
+	else
 	{
 		Joint* chosenJoint = myDefMesh.mySkeleton.getSelectedJoint();
 		Joint* parentJoint = myDefMesh.mySkeleton.getParentJoint();
 
 		double angle;
+		double orientation;
 
-		GLfloat _matrixI[16];
-		Eigen::Matrix4f mvI(_matrixI);
+		Eigen::Matrix4d mvI(_matrixI);
 
-		Eigen::Vector4f n1 = mvI * Eigen::Vector4f(0, 0, -1, 0);
-		Eigen::Vector4f n2 = mvI * Eigen::Vector4f(0, 0, -1, 1);
-		Eigen::Vector4f axis = (n1 - n2) / (n1 - n2).norm();
-		Eigen::Vector3f a(axis.x(), axis.y(), axis.z());
-		
-		Eigen::Vector2f v(x - parentJoint->screenCoord.x, y - parentJoint->screenCoord.y);
-		Eigen::Vector2f u(chosenJoint->screenCoord.x - parentJoint->screenCoord.x, chosenJoint->screenCoord.x - parentJoint->screenCoord.y);
+		Eigen::Vector4d n1 = mvI * Eigen::Vector4d(0, 0, -1, 0);
+		Eigen::Vector4d n2 = mvI * Eigen::Vector4d(0, 0, -1, 1);
 
-		angle = acos(v.dot(u) / (v.norm() * u.norm()));
+		Eigen::Vector4d axis = (n1 - n2) / (n1 - n2).norm();
+		Eigen::Vector3d a(axis.x(), axis.y(), axis.z());
 
-		chosenJoint->updateLocalTransformation(a, angle);
+		Eigen::Vector3d v(x - parentJoint->screenCoord.x, y - parentJoint->screenCoord.y, 0);
+		//Eigen::Vector3d u(chosenJoint->screenCoord.x - parentJoint->screenCoord.x, chosenJoint->screenCoord.x - parentJoint->screenCoord.y, 0);
+		Eigen::Vector3d u(_mouseX - parentJoint->screenCoord.x, _mouseY - parentJoint->screenCoord.y, 0);
+
+		v.normalize();
+		u.normalize(); 
+
+		angle = acos(u.dot(v));
+		//angle = asin(crossProduct.norm() / (v.norm()*u.norm()));
+		//angle = acos(v.dot(u) / (v.norm() * u.norm()));
+
+		Eigen::Vector3d crossProduct = u.cross(v);
+
+		if (crossProduct.z() < 0) {
+			angle = -angle;
+		}
+
+		angle = angle / pow(2,4); //Reduce speed
+
+		chosenJoint->updateLocalTransformation(a, angle*(180/M_PI)); //Turn angle to radians
 		myDefMesh.mySkeleton.updateGlobalTransformation();
     }
 }

@@ -63,7 +63,7 @@ void Skeleton::glDrawSkeleton()
         else
             glColor3f(0.3, 0.3, 0.3);
 
-		Eigen::Vector4f finalPosition = joints[i].globalTransformation * Eigen::Vector4f(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
+		Eigen::Vector4d finalPosition = joints[i].globalTransformation * Eigen::Vector4d(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
 
         /*glTranslated(joints[i].position.x, joints[i].position.y, joints[i].position.z);
         glutSolidSphere(0.01, 15, 15);
@@ -72,20 +72,22 @@ void Skeleton::glDrawSkeleton()
 		glTranslated(finalPosition.x(), finalPosition.y(), finalPosition.z());
 		glutSolidSphere(0.01, 15, 15);
 		glTranslated(-finalPosition.x(), -finalPosition.y(), -finalPosition.z());
-
     }
 	glBegin(GL_LINES);
 	for (int i = 0; i < joints.size(); i++) {
-		Eigen::Vector4f finalPositionChild;
-		Eigen::Vector4f finalPositionParent;
+		Eigen::Vector4d finalPositionChild;
+		Eigen::Vector4d finalPositionParent;
 
-		finalPositionChild = joints[i].globalTransformation * Eigen::Vector4f(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
+		finalPositionChild = joints[i].globalTransformation * Eigen::Vector4d(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
 
 		if (joints[i].indexParent > -1) {
-			finalPositionParent = joints[joints[i].indexParent].globalTransformation * Eigen::Vector4f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z, 1.0f);
+			finalPositionParent = joints[joints[i].indexParent].globalTransformation * Eigen::Vector4d(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z, 1.0f);
+			
 			glVertex3f(finalPositionChild.x(), finalPositionChild.y(), finalPositionChild.z());
 			glVertex3f(finalPositionParent.x(), finalPositionParent.y(), finalPositionParent.z());
-			//glVertex3f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z);
+
+			/*glVertex3f(joints[i].position.x, joints[i].position.y, joints[i].position.z);
+			glVertex3f(joints[joints[i].indexParent].position.x, joints[joints[i].indexParent].position.y, joints[joints[i].indexParent].position.z);*/
 		}
 	}
 	glEnd();
@@ -107,9 +109,14 @@ void Skeleton::updateScreenCoord()
     glGetIntegerv( GL_VIEWPORT, viewport );
     for (unsigned i=0; i<joints.size(); i++)
     {
-        gluProject((GLdouble)joints[i].position.x, (GLdouble)joints[i].position.y, (GLdouble)joints[i].position.z,
+		Eigen::Vector4d finalPosition = joints[i].globalTransformation * Eigen::Vector4d(joints[i].position.x, joints[i].position.y, joints[i].position.z, 1.0f);
+
+        /*gluProject((GLdouble)joints[i].position.x, (GLdouble)joints[i].position.y, (GLdouble)joints[i].position.z,
                 modelview, projection, viewport,
-                &winX, &winY, &winZ );
+                &winX, &winY, &winZ );*/
+		gluProject(finalPosition.x(), finalPosition.y(), finalPosition.z(),
+			modelview, projection, viewport,
+			&winX, &winY, &winZ); 
         joints[i].screenCoord.x = winX;
         joints[i].screenCoord.y = (double)glutGet(GLUT_WINDOW_HEIGHT)-winY;
     }
