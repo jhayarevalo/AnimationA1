@@ -14,6 +14,8 @@ DefMesh::DefMesh()
         glmFacetNormals(pmodel);
     }
     mySkeleton.loadSkeleton("./model/skeleton.out");
+
+	GLfloat vertices = (pmodel->numvertices + 1) * 3;
 }
 void DefMesh::glDraw(int type)
 {

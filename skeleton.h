@@ -41,10 +41,10 @@ struct Joint
     }
 
 	void updateLocalTransformation(Eigen::Vector3f& axis, double angle) {
-		Eigen::Matrix4f rotationMatrix;// = Eigen::AngleAxisf(angle, axis).matrix();
+		Eigen::Matrix3f rotationMatrix = Eigen::AngleAxisf(angle, axis).matrix();
 		//Eigen::Vector3f positionMatrix(position.x, position.y, position.z);
 
-		rotationMatrix(0,0) = pow(axis.x(), 2) + cos(angle) * (1 - pow(axis.x(), 2));
+		/*rotationMatrix(0,0) = pow(axis.x(), 2) + cos(angle) * (1 - pow(axis.x(), 2));
 		rotationMatrix(0, 1) = (axis.x())*(axis.y())*(1 - cos(angle)) - (axis.z())*sin(angle);
 		rotationMatrix(0, 2) = (axis.x())*(axis.z())*(1 - cos(angle)) + (axis.y())*sin(angle);
 
@@ -59,25 +59,12 @@ struct Joint
 		rotationMatrix(0, 3) = rotationMatrix(1, 3) = rotationMatrix(2, 3) = 0;
 		rotationMatrix(3, 0) = rotationMatrix(3, 1) = rotationMatrix(3, 2) = 0;
 
-		rotationMatrix(3, 3) = 1;
+		rotationMatrix(3, 3) = 1;*/
 
-		/*positionMatrix = rotationMatrix * positionMatrix;
-
-		position.x = positionMatrix.x();
-		position.y = positionMatrix.y();
-		position.z = positionMatrix.z();
-
-		cout << "x: " << position.x << endl;
-		cout << "y: " << position.y << endl;
-		cout << "z: " << position.z << endl << endl;*/
-
-		localTransformation = rotationMatrix;
-		updateGlobalTransformation();
+		localTransformation.block<3, 3>(0, 0) = rotationMatrix;
+		//localTransformation = rotationMatrix;
 	}
 
-	void updateGlobalTransformation() {
-		globalTransformation = globalTransformation * localTransformation;
-	}
 
 };
 
@@ -139,6 +126,26 @@ public:
 			}
 		}
 		return nullptr;
+	}
+
+	void updateGlobalTransformation() {
+		for (int i = 1; i < joints.size(); i++) {
+			Joint* parent = &joints[joints[i].indexParent];
+
+			Eigen::Matrix4f translateToParent = Eigen::Matrix4f::Identity();
+			Eigen::Vector3f parentVector(parent->position.x, parent->position.y, parent->position.z);
+
+			translateToParent.block<3, 1>(0, 3) = parentVector;
+
+			joints[i].globalTransformation = parent->globalTransformation * translateToParent * joints[i].localTransformation * translateToParent.inverse();
+
+			/*translateToParent(0, 3) = parent->position.x;
+			translateToParent(1, 3) = parent->position.y;
+			translateToParent(2, 3) = parent->position.z;*/
+
+			//joints[i].globalTransformation = parent->globalTransformation  * joints[i].localTransformation;
+		}
+		
 	}
 };
 
