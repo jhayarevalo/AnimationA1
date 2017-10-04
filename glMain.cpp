@@ -495,6 +495,8 @@ int main(int argc, char **argv)
     glutReshapeFunc(changeSize);
     glutTimerFunc(10, timerFunction, 1);
 
+	myDefMesh.copyVertices();
+
     glutMouseFunc(mouseEvent);
     glutMotionFunc(mouseMoveEvent);
     glutKeyboardFunc(handleKeyPress);

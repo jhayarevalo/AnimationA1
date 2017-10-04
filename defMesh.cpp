@@ -40,17 +40,22 @@ void DefMesh::loadWeights(std::string weightsFileName)
 	}
 }
 
+void DefMesh::copyVertices() {
+	GLfloat* orignalVertices = pmodel->vertices;
+
+	for (int i = 0; i < (3 * pmodel->numvertices) + 3; i++) {
+		vertices.push_back(orignalVertices[i]);
+	}
+}
+
 
 void DefMesh::updateVertices() {
 //newVertexPosition = sum of all (weights of bone * transformation of bone) * currentVertexPosition
 
 	GLfloat* meshVertices = pmodel->vertices;
-	GLfloat* meshNormals = pmodel->normals;
-
-	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> jointGlobalTrans = mySkeleton.getGlobalTransformationsOfJoints();
-
 	int verticesSize = pmodel->numvertices;
-	int trianglesSize = pmodel->numtriangles;
+
+	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> jointGlobalTrans = mySkeleton.getGlobalTransformationsOfJoints();//All 17 global transformations	
 
 	for (int i = 3; i < (3*verticesSize)+3; i += 3) {
 		Eigen::Matrix4f sumWeightTransform = Eigen::Matrix4f::Zero();
@@ -61,14 +66,13 @@ void DefMesh::updateVertices() {
 			if(weight != 0)
 				sumWeightTransform += (jointGlobalTrans[j] * weight);
 		}
-		Eigen::Vector4f vertexPosition(meshVertices[i], meshVertices[i + 1], meshVertices[i + 2], 0.0f);
+		Eigen::Vector4f vertexPosition(vertices[i], vertices[i + 1], vertices[i + 2], 1.0f);
 		vertexPosition = sumWeightTransform * vertexPosition;
 
 		meshVertices[i] = vertexPosition.x();
 		meshVertices[i + 1] = vertexPosition.y();
 		meshVertices[i + 2] = vertexPosition.z();
 	}
-
 }
 
 void DefMesh::glDraw(int type)

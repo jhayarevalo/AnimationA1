@@ -12,9 +12,9 @@
 class DefMesh
 {
 private:
-	//std::vector<std::vector<float>> vertexWeights;
 	std::vector<std::vector<float>> weights;
 public:
+	std::vector<GLfloat> vertices;
     Skeleton mySkeleton;
     GLMmodel * pmodel;
     GLuint mode;
@@ -26,6 +26,7 @@ public:
 	*/
 	void DefMesh::loadWeights(std::string weightsFileName);
 
+	void DefMesh::copyVertices();
 	void DefMesh::updateVertices();
 
 	float getWeight(int i, int j) {
