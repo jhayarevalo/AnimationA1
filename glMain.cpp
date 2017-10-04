@@ -284,7 +284,6 @@ void handleKeyPress(unsigned char key, int x, int y)
     }
 }
 
-
 void mouseEvent(int button, int state, int x, int y)
 {
     int viewport[4];
@@ -451,8 +450,10 @@ void mouseMoveEvent(int x, int y)
 
 		chosenJoint->updateLocalTransformation(a, angle*(180/M_PI)); //Turn angle to radians
 		myDefMesh.mySkeleton.updateGlobalTransformation();
+		myDefMesh.updateVertices();
     }
 }
+
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

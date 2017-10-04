@@ -82,8 +82,18 @@ public:
     
     void selectOrReleaseJoint();
 
-	std::vector<Joint, Eigen::aligned_allocator<Joint>>* getJoints() {
-		return &joints;
+	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> getGlobalTransformationsOfJoints() {
+		std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> allGlobalTransformations;
+
+		for (int i = 0; i < joints.size()-1; i++) {
+			Eigen::Matrix4d transformationD(joints[i].globalTransformation);
+			Eigen::Matrix4f transformationF = transformationD.cast<float>();
+
+			allGlobalTransformations.push_back(transformationF);
+		}
+
+		return allGlobalTransformations;
+		
 	}
 
 	Joint* getSelectedJoint() {

@@ -1,4 +1,5 @@
 #include "defMesh.h"
+
 DefMesh::DefMesh()
 {
     pmodel = NULL;
@@ -14,9 +15,62 @@ DefMesh::DefMesh()
         glmFacetNormals(pmodel);
     }
     mySkeleton.loadSkeleton("./model/skeleton.out");
-
-	GLfloat vertices = (pmodel->numvertices + 1) * 3;
+	loadWeights("./model/weights.out");
 }
+
+void DefMesh::loadWeights(std::string weightsFileName)
+{
+	std::string strWeight;
+	std::ifstream weightsFile(weightsFileName.c_str());
+	if (weightsFile.is_open())
+	{
+		while (std::getline(weightsFile, strWeight)) { //Read a line to build a bone
+			std::vector<std::string> weightParams;
+			splitstring splitStr(strWeight);
+			weightParams = splitStr.split(' ');
+
+			std::vector<float> weightsOfVertex;
+
+			for (int i = 0; i < weightParams.size(); i++) {
+				weightsOfVertex.push_back(std::atof(weightParams[i].c_str())); //Stores a vertex for each bone
+			}
+
+			weights.push_back(weightsOfVertex); //Will have vectors of floats where each vector = 1 vertex with weights of each 17 bones
+		}
+	}
+}
+
+
+void DefMesh::updateVertices() {
+//newVertexPosition = sum of all (weights of bone * transformation of bone) * currentVertexPosition
+
+	GLfloat* meshVertices = pmodel->vertices;
+	GLfloat* meshNormals = pmodel->normals;
+
+	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> jointGlobalTrans = mySkeleton.getGlobalTransformationsOfJoints();
+
+	int verticesSize = pmodel->numvertices;
+	int trianglesSize = pmodel->numtriangles;
+
+	for (int i = 3; i < (3*verticesSize)+3; i += 3) {
+		Eigen::Matrix4f sumWeightTransform = Eigen::Matrix4f::Zero();
+
+		for (int j = 1; j < jointGlobalTrans.size(); j++) {
+			float weight = getWeight((i-3)/3,j-1);
+
+			if(weight != 0)
+				sumWeightTransform += (jointGlobalTrans[j] * weight);
+		}
+		Eigen::Vector4f vertexPosition(meshVertices[i], meshVertices[i + 1], meshVertices[i + 2], 0.0f);
+		vertexPosition = sumWeightTransform * vertexPosition;
+
+		meshVertices[i] = vertexPosition.x();
+		meshVertices[i + 1] = vertexPosition.y();
+		meshVertices[i + 2] = vertexPosition.z();
+	}
+
+}
+
 void DefMesh::glDraw(int type)
 {
     
